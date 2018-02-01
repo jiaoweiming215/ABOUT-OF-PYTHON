@@ -14,7 +14,24 @@ s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 #客户端主动发起TCP连接，需要知道服务器IP和端口号，新浪网站的IP可以用域名“www.sina.com.cb”自动转到IP地址，怎么知道网站的端口号呢？
 #：作为服务器，提供什么样的服务，端口号必须固定下来。由于我们想要访问网页，因此新浪提供网页服务的服务器必须把端口号固定为80端口，因为
 #80端口是WEB服务的标准端口。其他服务都有对应的标准端口号，例如SMTP服务是25端口，FTP服务是21端口，等等。端口号小于1024的是Internet标
-#准服务的端口，端口号大于1024的，可以任意使用
+#准服务的端口，端口号大于1024的，可以任意使用。
 s.connect(('www.baidu.com',80))
 
+s.send(b'GET / HTTP/1.1\r\nHost: www.sina.com.cn\r\nConnection: close\r\n\r\n')
+buffer = []
+while True:
+    # 每次最多接收1k字节:
+    d = s.recv(1024)
+    if d:
+        buffer.append(d)
+    else:
+        break
+data = b''.join(buffer)
+# 关闭连接:
+s.close()
+header, html = data.split(b'\r\n\r\n', 1)
+print(header.decode('utf-8'))
+# 把接收的数据写入文件:
+with open('sina.html', 'wb') as f:
+    f.write(html)
 
